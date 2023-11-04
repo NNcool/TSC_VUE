@@ -256,6 +256,10 @@ export default {
     .el-form-item{
         margin-bottom: 0px;
     }
+
+    /* .el-form-item{
+        margin-bottom: 0px;
+    } */
     .custom-input {
         width: 220px;
         margin-left: 80px;
