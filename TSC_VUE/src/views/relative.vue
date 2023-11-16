@@ -102,6 +102,8 @@
         },
         // 三、如果是地区叶子节点，展示其下面岩性信息
         getOutputs: function (data) {
+          console.log("dddd",data)
+          console.log("dddd",data.id)
             axios.get("http://localhost:9001/output/findsByAreaId/"+data.id)
             .then((response) => {
                 this.clickedLeaves = response.data.result;
@@ -144,9 +146,19 @@
                         var option = {
                             backgroundColor: '#AB9793',
                             tooltip: {
-                                show: false,
+                                show: true,
                                 trigger: 'item',
-                                triggerOn: 'mousemove'
+                                triggerOn: 'mousemove',
+                                formatter: function (params) {
+                                  console.log("是否主表",params.data.isMaster)
+                                  // 在这里定义你想要显示的提示信息
+                                  if (params.data.isMaster){
+                                    //master绝对数据
+                                    return "时期：" + params.data.name + "<br>地质年龄[age]：" + params.data.age;
+                                  }else{
+                                    return "岩性花纹[Lithology(TSC)]：" + params.data.name + "<br>岩层地质年龄[age]：" + params.data.age;
+                                  }
+                                }
                             },
                             series: [{
                                 type: 'tree',
