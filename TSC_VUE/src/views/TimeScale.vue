@@ -4,6 +4,7 @@
             <el-header>
                 <home-header />
             </el-header>
+            <cs-ruler></cs-ruler>
             <div class="full-box" style="display: flex; flex-direction: column; height: 100%;">
                 <div class="button-container">
                     <button class="custom-button" @click="showSettingsDialog">Settings</button>
@@ -45,8 +46,8 @@
                         </el-form-item>
                         <el-radio  v-model="form.selectedOption1" :label="1">Age/Stage Name
                             <el-select v-model="form.region1" placeholder="请选择Name">
-                            <el-option label="Present(0 Ma)" value="shanghai"></el-option>
-                            <el-option label="等等" value="beijing"></el-option>
+                            <el-option label="Present(0 Ma)" value="0"></el-option>
+                            <el-option v-for="(item, index) in this.limitData" :key="index" :label="item.stage + '(' + item.ma + ' Ma)'" :value="item.ma"></el-option>
                             </el-select>
                         </el-radio>
                         <el-radio v-model="form.selectedOption1" :label="2" @change="setDefaultMaValue">ma：
@@ -57,8 +58,8 @@
                         </el-form-item>
                         <el-radio  v-model="form.selectedOption2" :label="3" >Age/Stage Name
                             <el-select v-model="form.region2" placeholder="请选择Name">
-                                <el-option label="Present(0 Ma)" value="shanghai"></el-option>
-                                <el-option label="等等" value="beijing"></el-option>
+                                <el-option label="Present(0 Ma)" value="0"></el-option>
+                                <el-option v-for="(item, index) in this.limitData" :key="index" :label="item.stage + '(' + item.ma + ' Ma)'" :value="item.ma"></el-option>
                             </el-select>
                         </el-radio>
                         <el-radio v-model="form.selectedOption2" :label="4" @change="setDefaultMaValue">ma：
@@ -130,6 +131,7 @@ export default {
             generatedColumns:[],//用于存储生成的列信息
             showTable:false,//控制是否显示数据表格
             tableData:[],//存储数据表格的数据
+            limitData:[],
             // nums:Array.from({length:15},(_,i) => i*4 + 2),//生成从2到16的整数，间隔为4
             yAxisTicks: 10, // 刻度的数量
             yAxisTickSpacing: 40, // 刻度的间隔
@@ -174,6 +176,11 @@ export default {
         .catch(error => {
             console.error(error);
         });
+        axios.get("http://localhost:9001/masterchronos/getma")
+        .then(response => {
+            this.limitData = response.data.result;
+            console.log("this.limitData:",this.limitData);
+        })
         axios.get("http://localhost:9001/masterchronos/allEntities")
         .then(response => {
             const dataFromBackend = response.data.result;
