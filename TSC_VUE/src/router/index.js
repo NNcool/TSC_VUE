@@ -1,7 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Router from "vue-router";
-import User from "../views/User.vue";
+import TimeScale from "../views/TimeScale.vue";
 import lithology from "../views/lithology.vue";
 import relative from "../views/relative.vue";
 
@@ -11,8 +11,8 @@ export default new Router({
   routes: [
     {
       path: "/",
-      name: "User",
-      component: User
+      name: "timesvale",
+      component: TimeScale
     },
     {
       path: "/lithology",
