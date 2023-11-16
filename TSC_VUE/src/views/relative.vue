@@ -102,7 +102,6 @@
         },
         // 三、如果是地区叶子节点，展示其下面岩性信息
         getOutputs: function (data) {
-          console.log("dddd",data)
           console.log("dddd",data.id)
             axios.get("http://localhost:9001/output/findsByAreaId/"+data.id)
             .then((response) => {
