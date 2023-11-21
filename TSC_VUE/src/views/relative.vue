@@ -11,7 +11,7 @@
             <el-aside style="flex: 0 0 30%; max-width: 20%; background-color: rgb(238, 241, 246)">
               <el-scrollbar wrap-class="scroll-wrapper">
                 <div class="content-container">
-                  知识关联页面
+                  马来西亚地区树
                   <el-tree :data="areas" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
                   <div>
                     <h3>当前点击的地区岩性列表：</h3>
@@ -153,9 +153,24 @@
                                   // 在这里定义你想要显示的提示信息
                                   if (params.data.isMaster){
                                     //master绝对数据
-                                    return "时期：" + params.data.name + "<br>地质年龄[age]：" + params.data.age;
+                                    return "宇(宙)：" + params.data.eon + 
+                                          "<br>界(代)：" + params.data.era + 
+                                          "<br>系(纪)：" + params.data.period + 
+                                          "<br>统(世)：" + params.data.epoch + 
+                                          "<br>统(世)-阶段：" + params.data.subEpoch + 
+                                          "<br>阶(期)：" + params.data.stage + 
+                                          "<br>阶(期)-阶段：" + params.data.subStage + 
+                                          "<br>地质年龄[age]：" + params.data.age;
                                   }else{
-                                    return "岩性花纹[Lithology(TSC)]：" + params.data.name + "<br>岩层地质年龄[age]：" + params.data.age;
+                                    return "所属地区[location]：" + params.data.areaName +
+                                          "<br>Lithology(TSC)：" + params.data.name + 
+                                          "<br>Formation：" + params.data.faciesLevel + 
+                                          "<br>计算公式：" + params.data.maFormula +
+                                          "<br>地质年龄[age]：" + params.data.age +
+                                          "<br>CombinedComments：" + params.data.calibrationComments +
+                                          "<br>Lithology：" + params.data.lithology +
+                                          "<br>CombinedComments：" + params.data.calibrationComments +
+                                          "<br>CombinedComments：" + params.data.calibrationComments;
                                   }
                                 }
                             },
@@ -214,7 +229,7 @@
                                     height: 60,
                                     lineHeight:60,
                                     formatter: function(data) {
-                                        return ["{img|}{name| " + data.data.name + " }{value| " +data.data.age+" }"].join(' ');
+                                        return ["{img|}{id| " +"【"+ data.data.id +"】"+ " }{name| " + data.data.name + " }{value| " +data.data.age+" }"].join(' ');
                                     },
                                     rich: { //给不同的数据应用不同的样式
                                         img:{
@@ -223,6 +238,12 @@
                                                 image: '../assets/Help.png'
                                             },
                                                             height:40
+                                        },
+                                        id: {
+                                            color: '#000',
+                                            fontSize: 14,
+                                            lineHeight: 20,
+                                            
                                         },
                                         name: {
                                             color: '#000',
