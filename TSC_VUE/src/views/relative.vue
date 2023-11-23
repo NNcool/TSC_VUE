@@ -126,7 +126,7 @@
         },
 
         drawLine(id) {
-          axios.get("http://localhost:9001/output/findOutputAndRelativeById/"+id)
+          axios.get("http://localhost:9001/output/findRangeSpotById/"+id)
           .then((response) => {
                 this.arr = response.data.result;
                 // 数据加载完成后进行 ECharts 初始化和绘制
@@ -166,11 +166,11 @@
                                           "<br>Lithology(TSC)：" + params.data.name + 
                                           "<br>Formation：" + params.data.faciesLevel + 
                                           "<br>计算公式：" + params.data.maFormula +
-                                          "<br>地质年龄[age]：" + params.data.age +
-                                          "<br>CombinedComments：" + params.data.calibrationComments +
-                                          "<br>Lithology：" + params.data.lithology +
-                                          "<br>CombinedComments：" + params.data.calibrationComments +
-                                          "<br>CombinedComments：" + params.data.calibrationComments;
+                                          "<br>地质年龄[age]：" + params.data.age;
+                                          // "<br>CombinedComments：" + params.data.calibrationComments +
+                                          // "<br>Lithology：" + params.data.lithology +
+                                          // "<br>CombinedComments：" + params.data.calibrationComments +
+                                          // "<br>CombinedComments：" + params.data.calibrationComments;
                                   }
                                 }
                             },
@@ -213,8 +213,21 @@
                                     curveness: 0.5, //线的曲度
                                     width: 3 ,//线宽
                                     color : '#4B3C36',
-                                    borderColor:'#0000ff'
-
+                                    borderColor:'#FF0000',
+                                    formatter: function (params) {
+                                            // 返回你想要在每个节点前的线上展示的内容
+                                            return '自定义内容';
+                                        },
+                                    label: {
+                                        show: true,
+                                        position: 'middle',
+                                        formatter: function (params) {
+                                            // 返回你想要在每个节点前的线上展示的内容
+                                            return '自定义内容';
+                                        },
+                                        fontSize: 10,  // 设置字体大小
+                                        color: '#000',  // 设置字体颜色
+                                    }
                                 },
 
                                 label: {
@@ -229,7 +242,8 @@
                                     height: 60,
                                     lineHeight:60,
                                     formatter: function(data) {
-                                        return ["{img|}{id| " +"【"+ data.data.id +"】"+ " }{name| " + data.data.name + " }{value| " +data.data.age+" }"].join(' ');
+
+                                        return ["{name| "+"10%   "+ data.data.bottom.name+"}{id| "+"\n"+"top:【"+data.data.top.id+"】"+"}{value| "+data.data.top.age+"}{id| "+";"+"bottom:【"+data.data.bottom.id+"】"+"}{value| "+data.data.bottom.age+"}"].join('');
                                     },
                                     rich: { //给不同的数据应用不同的样式
                                         img:{
@@ -237,25 +251,27 @@
                                             backgroundColor: {
                                                 image: '../assets/Help.png'
                                             },
-                                                            height:40
+                                            height:40
+                                        },
+                                        name: {
+                                            color: '#000',
+                                            fontSize: 25,
+                                            lineHeight: 40,
+                                            align: 'left',  // 设置左对齐
                                         },
                                         id: {
                                             color: '#000',
                                             fontSize: 14,
                                             lineHeight: 20,
-                                            
+                                            align: 'left',  // 设置左对齐
                                         },
-                                        name: {
-                                            color: '#000',
-                                            fontSize: 14,
-                                            lineHeight: 20,
-                                            
-                                        },
+                                        
                                         value: {
                                             color: '#000',
                                             fontSize: 14,
                                             lineHeight: 20,
                                             fontWeight: 'bold',
+                                            align: 'left',  // 设置左对齐
                                         },
 
                                     }
