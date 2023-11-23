@@ -11,7 +11,7 @@
             <el-aside style="flex: 0 0 30%; max-width: 20%; background-color: rgb(238, 241, 246)">
               <el-scrollbar wrap-class="scroll-wrapper">
                 <div class="content-container">
-                  知识关联页面
+                  马来西亚地区树
                   <el-tree :data="areas" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
                   <div>
                     <h3>当前点击的地区岩性列表：</h3>
@@ -126,7 +126,7 @@
         },
 
         drawLine(id) {
-          axios.get("http://localhost:9001/output/findOutputAndRelativeById/"+id)
+          axios.get("http://localhost:9001/output/findRangeSpotById/"+id)
           .then((response) => {
                 this.arr = response.data.result;
                 // 数据加载完成后进行 ECharts 初始化和绘制
@@ -153,9 +153,24 @@
                                   // 在这里定义你想要显示的提示信息
                                   if (params.data.isMaster){
                                     //master绝对数据
-                                    return "时期：" + params.data.name + "<br>地质年龄[age]：" + params.data.age;
+                                    return "宇(宙)：" + params.data.eon + 
+                                          "<br>界(代)：" + params.data.era + 
+                                          "<br>系(纪)：" + params.data.period + 
+                                          "<br>统(世)：" + params.data.epoch + 
+                                          "<br>统(世)-阶段：" + params.data.subEpoch + 
+                                          "<br>阶(期)：" + params.data.stage + 
+                                          "<br>阶(期)-阶段：" + params.data.subStage + 
+                                          "<br>地质年龄[age]：" + params.data.age;
                                   }else{
-                                    return "岩性花纹[Lithology(TSC)]：" + params.data.name + "<br>岩层地质年龄[age]：" + params.data.age;
+                                    return "所属地区[location]：" + params.data.areaName +
+                                          "<br>Lithology(TSC)：" + params.data.name + 
+                                          "<br>Formation：" + params.data.faciesLevel + 
+                                          "<br>计算公式：" + params.data.maFormula +
+                                          "<br>地质年龄[age]：" + params.data.age;
+                                          // "<br>CombinedComments：" + params.data.calibrationComments +
+                                          // "<br>Lithology：" + params.data.lithology +
+                                          // "<br>CombinedComments：" + params.data.calibrationComments +
+                                          // "<br>CombinedComments：" + params.data.calibrationComments;
                                   }
                                 }
                             },
@@ -198,8 +213,21 @@
                                     curveness: 0.5, //线的曲度
                                     width: 3 ,//线宽
                                     color : '#4B3C36',
-                                    borderColor:'#0000ff'
-
+                                    borderColor:'#FF0000',
+                                    formatter: function (params) {
+                                            // 返回你想要在每个节点前的线上展示的内容
+                                            return '自定义内容';
+                                        },
+                                    label: {
+                                        show: true,
+                                        position: 'middle',
+                                        formatter: function (params) {
+                                            // 返回你想要在每个节点前的线上展示的内容
+                                            return '自定义内容';
+                                        },
+                                        fontSize: 10,  // 设置字体大小
+                                        color: '#000',  // 设置字体颜色
+                                    }
                                 },
 
                                 label: {
@@ -214,7 +242,8 @@
                                     height: 60,
                                     lineHeight:60,
                                     formatter: function(data) {
-                                        return ["{img|}{name| " + data.data.name + " }{value| " +data.data.age+" }"].join(' ');
+
+                                        return ["{name| "+"10%   "+ data.data.bottom.name+"}{id| "+"\n"+"top:【"+data.data.top.id+"】"+"}{value| "+data.data.top.age+"}{id| "+";"+"bottom:【"+data.data.bottom.id+"】"+"}{value| "+data.data.bottom.age+"}"].join('');
                                     },
                                     rich: { //给不同的数据应用不同的样式
                                         img:{
@@ -222,19 +251,27 @@
                                             backgroundColor: {
                                                 image: '../assets/Help.png'
                                             },
-                                                            height:40
+                                            height:40
                                         },
                                         name: {
                                             color: '#000',
+                                            fontSize: 25,
+                                            lineHeight: 40,
+                                            align: 'left',  // 设置左对齐
+                                        },
+                                        id: {
+                                            color: '#000',
                                             fontSize: 14,
                                             lineHeight: 20,
-                                            
+                                            align: 'left',  // 设置左对齐
                                         },
+                                        
                                         value: {
                                             color: '#000',
                                             fontSize: 14,
                                             lineHeight: 20,
                                             fontWeight: 'bold',
+                                            align: 'left',  // 设置左对齐
                                         },
 
                                     }
