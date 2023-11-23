@@ -20,7 +20,9 @@ export default {
       console.log(key, keyPath);
     },
     lithology() {
-      this.$router.push({ path: '/lithology' })
+      if (this.$route.path !== '/lithology') {
+        this.$router.push('/lithology');
+      }
     },
     relative() {
       this.$router.push({ path: '/relative' })
