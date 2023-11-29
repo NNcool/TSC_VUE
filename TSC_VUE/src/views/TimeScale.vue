@@ -123,7 +123,6 @@ export default {
             tableData:[],//存储数据表格的数据
             limitData:[],
             chartDatas:[],
-            //npm install chart.js@2.9.4 --save
             chart:null,
             minValue:0,
             maxValue:10,
@@ -143,6 +142,10 @@ export default {
                 selectedOption1:1,
                 selectedOption2:3,
             },
+            imageUrls:[
+                '/assets/Clayeylimestone.jpg',
+                '/assets/Claystone.jpg'
+            ],
             checked:false,
             checked1:false,
             checked2:false,
@@ -216,27 +219,29 @@ export default {
         },
         button4Click() {
         // 在这里处理按钮4的点击事件
-        //     console.log(this.$refs.tree.getCheckedNodes());
-            //     const checkedNodes = this.$refs.tree.getCheckedNodes();
-            //     console.log("checkedNodes:",checkedNodes);
-            //     const selectedIds = checkedNodes.map(node => node.areaName);
-            //     console.log("selectedIds:",selectedIds);
-            //     this.selectedNodeIds = selectedIds;
-            //     console.log("Selected Node IDs:", this.selectedNodeIds);
-            //     //根据所选节点生成对应列的信息
-            //     this.generatedColumns = checkedNodes.map(node => {
-            //         return{
-            //             field:node.id,
-            //             label:node.areaName
-            //         };
-            //     });
-            //     console.log("generatedColumns:",this.generatedColumns);
-            //     this.showDialog = false;
-            //     this.showTable = true;
+            // if(this.$refs.tree){
+            //     console.log(this.$refs.tree.getCheckedNodes());
+            //         const checkedNodes = this.$refs.tree.getCheckedNodes();
+            //         console.log("checkedNodes:",checkedNodes);
+            //         const selectedIds = checkedNodes.map(node => node.areaName);
+            //         console.log("selectedIds:",selectedIds);
+            //         this.selectedNodeIds = selectedIds;
+            //         console.log("Selected Node IDs:", this.selectedNodeIds);
+            //         //根据所选节点生成对应列的信息
+            //         this.generatedColumns = checkedNodes.map(node => {
+            //             return{
+            //                 field:node.id,
+            //                 label:node.areaName
+            //             };
+            //         });
+            //         console.log("generatedColumns:",this.generatedColumns);
+            //         this.showDialog = false;
+            //         this.showTable = true;
             // }else{
             //     this.generatedColumns = [];
             //     this.showDialog = false;
-            //     this.showTable = true;
+            //         this.showTable = true;
+            // }
         },
         handleRegion1Change(value){
             if (this.form.selectedOption1 === 1) {
@@ -284,11 +289,12 @@ export default {
                 });
                 var option = {
                     title: {
-                        text: '资源总览',
-                        left:'20px',
+                        text: 'Ma',
+                        left:'0.5%',
+                        top:'30px',
                         textStyle: {    
                         color: "#436EEE",
-                        fontSize: 17,   
+                        fontSize: 25,   
                         }
                     },
                     grid: {
@@ -372,17 +378,18 @@ export default {
                 const checkedNodes = this.$refs.tree.getCheckedNodes();
                 console.log("checkedNodes:",checkedNodes);
                 const dynamicLabels = checkedNodes.map(node => node.areaName);
+                console.log("dynamicLabels:",dynamicLabels);
                 const labels = fixedLabels.concat(dynamicLabels);
                 console.log("labels:",labels);
                 console.log("this.tableData:",this.tableData);
-                let imgs = 'el-icon-star-on'
                 var chartCanvas = echarts.init(this.$refs.chartCanvas);
                 console.log("this.chartDatas:",this.chartDatas);
-                const seriesData = this.chartDatas.map(item =>{
+                const fixedseriesData = this.chartDatas.map(item =>{
                     return {
                         name: item.name, // 替换为从后端数据中获取的系列名称
                         type: 'bar',
-                        stack: '使用情况',
+                        stack: 'stack-1',
+                        barWidth:'100%',
                         data: item.data, // 替换为从后端数据中获取的具体系列数据
                         itemStyle: {
                             normal: { color: item.color },
@@ -396,9 +403,79 @@ export default {
                         barCategoryGap: 0,
                     };
                 });
+                const dynamicSeries = [
+                    // 将单独的值包装在数组中
+                    {
+                        name: 'Series A',
+                        type: 'bar',
+                        stack: 'stack-1',
+                        itemStyle: {
+                            normal: { 
+                                color: {
+                                    type: 'pattern',
+                                    image: new Image(),
+                                },
+                            },
+                        },
+                        data: [null, null,null, 1,2,3], // 替换为具体的数据
+                    },
+                    {
+                        name: 'Series B',
+                        type: 'bar',
+                        stack: 'stack-1',
+                        itemStyle: {
+                            normal: { 
+                                color: {
+                                    type: 'pattern',
+                                    image: new Image(),
+                                },
+                             },
+                        },
+                        data: [null, null,null, 4,5,6], // 替换为具体的数据
+                    },
+                    {
+                        name: 'Series C',
+                        type: 'bar',
+                        stack: 'stack-1',
+                        itemStyle: {
+                            normal: { 
+                                color: {
+                                    type: 'pattern',
+                                    image: new Image(),
+                                },
+                             },
+                        },
+                        data: [null, null,null, 7,8,9], // 替换为具体的数据
+                    },
+                ]
+                dynamicSeries.forEach(series => {
+                    series.itemStyle.normal.color.image.imageSize = [30, 30]; 
+                    series.itemStyle.normal.color.image.src = require('@/assets/Coarse-grainedsandstone.jpg');
+                });
+                // const dynamicLines = dynamicSeries.map((series,index) =>{
+                //     return {
+                //         type: 'line',
+                //         symbol: 'none',
+                //         data: new Array(labels.length).fill(null),
+                //         markLine: {
+                //             symbol: ['none', 'none'],
+                //             lineStyle: {
+                //                 type: 'dashed',
+                //                 color: 'red', // 你可以自定义竖线的颜色
+                //             },
+                //             data: [
+                //                 { xAxis: index * 3, name: '起始线' },
+                //                 { xAxis: (index + 1) * 3, name: '结束线' },
+                //             ],
+                //         },
+                //     };
+                // });
+                const seriesData = fixedseriesData.concat(dynamicSeries);
+                console.log("seriesData:",seriesData);
+                // seriesData.push(...dynamicSeries);
                 var option = {
                     title: {
-                        text: '资源总览',
+                        text: 'Ma',
                         left:'20px',
                         textStyle: {    
                         color: "#436EEE",
@@ -406,9 +483,10 @@ export default {
                         }
                     },
                     grid: {
-                        left: 5,  // 设置图表绘制区域的左边距
-                        right: 5, // 设置图表绘制区域的右边距
-                        containLabel: true,
+                        left: 50,  // 调整图表左边距离
+                        right: 50, // 调整图表右边距离
+                        bottom: 50, // 调整图表底部距离
+                        containLabel: true, // 包含坐标轴的标签
                     },
                     dataZoom: [
                         {
@@ -466,7 +544,9 @@ export default {
                     },
 
                     series: seriesData,
+                    
                 };
+                
                 // 使用刚指定的配置项和数据显示图表。
                 chartCanvas.setOption(option);
                 chartCanvas.on('click',  function(param) {
