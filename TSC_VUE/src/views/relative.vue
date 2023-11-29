@@ -16,7 +16,7 @@
                   <div>
                     <h3>当前点击的地区岩性列表：</h3>
                     <ul>
-                      <li v-for="leaf in clickedLeaves" :key="leaf.id" @click="handleOutputClick(leaf)" class="clickable-item">{{ leaf.lithologyPattern+"("+leaf.age+")" }}</li>
+                      <li v-for="leaf in clickedLeaves" :key="leaf.id" @click="handleOutputClick(leaf)" class="clickable-item">{{ leaf.lithologyPattern+"("+leaf.topAge+", "+leaf.age+")" }}</li>
                     </ul>
                   </div>
                 </div>
@@ -151,22 +151,29 @@
                                 formatter: function (params) {
                                   console.log("是否主表",params.data.isMaster)
                                   // 在这里定义你想要显示的提示信息
-                                  if (params.data.isMaster){
+                                  if (params.data.top.isMaster && params.data.bottom.isMaster){
                                     //master绝对数据
-                                    return "宇(宙)：" + params.data.eon + 
-                                          "<br>界(代)：" + params.data.era + 
-                                          "<br>系(纪)：" + params.data.period + 
-                                          "<br>统(世)：" + params.data.epoch + 
-                                          "<br>统(世)-阶段：" + params.data.subEpoch + 
-                                          "<br>阶(期)：" + params.data.stage + 
-                                          "<br>阶(期)-阶段：" + params.data.subStage + 
-                                          "<br>地质年龄[age]：" + params.data.age;
+                                    return "宇(宙)：" + params.data.bottom.eon + 
+                                          "<br>界(代)：" + params.data.bottom.era + 
+                                          "<br>系(纪)：" + params.data.bottom.period + 
+                                          "<br>统(世)：" + params.data.bottom.epoch + 
+                                          "<br>统(世)-阶段：" + params.data.bottom.subEpoch + 
+                                          "<br>阶(期)：" + params.data.bottom.stage + 
+                                          "<br>阶(期)-阶段：" + params.data.bottom.subStage + 
+                                          "<br>地质年龄[age]：" + params.data.bottom.age;
                                   }else{
-                                    return "所属地区[location]：" + params.data.areaName +
-                                          "<br>Lithology(TSC)：" + params.data.name + 
-                                          "<br>Formation：" + params.data.faciesLevel + 
-                                          "<br>计算公式：" + params.data.maFormula +
-                                          "<br>地质年龄[age]：" + params.data.age;
+                                    return "<b>top:</b>"+
+                                          "<br>所属地区[location]：" + params.data.top.areaName +
+                                          "<br>Lithology(TSC)：" + params.data.top.name + 
+                                          "<br>Formation：" + params.data.top.faciesLevel + 
+                                          "<br>计算公式：" + params.data.top.maFormula +
+                                          "<br>地质年龄[age]：" + params.data.top.age+
+                                          "<br><b>bottom：</b>"+
+                                          "<br>所属地区[location]：" + params.data.bottom.areaName +
+                                          "<br>Lithology(TSC)：" + params.data.bottom.name + 
+                                          "<br>Formation：" + params.data.bottom.faciesLevel + 
+                                          "<br>计算公式：" + params.data.bottom.maFormula +
+                                          "<br>地质年龄[age]：" + params.data.bottom.age;
                                           // "<br>CombinedComments：" + params.data.calibrationComments +
                                           // "<br>Lithology：" + params.data.lithology +
                                           // "<br>CombinedComments：" + params.data.calibrationComments +
@@ -242,8 +249,23 @@
                                     height: 60,
                                     lineHeight:60,
                                     formatter: function(data) {
+                                        if (data.data.isFirst){
+                                          return ["{name| "+data.data.bottom.name+"}{id| "+"\n"+"top:【"+data.data.top.id+"】"+"}{value| "+data.data.top.age+"}{id| "+";"+"bottom:【"+data.data.bottom.id+"】"+"}{value| "+data.data.bottom.age+"}"].join(''); 
+                                        }
+                                        var mainStr="";
+                                        if (data.data.loc!=null){
+                                          if (data.data.loc=="BOTTOM"){
+                                            mainStr= "(bottom)  "
+                                          }else{
+                                            mainStr= "(top)  "
+                                          }
+                                        }
+                                        if(data.data.percent!=null){
+                                          mainStr=mainStr+(data.data.percent * 100).toFixed(2) + '%  ';
+                                        }
+                                        mainStr=mainStr+data.data.top.name+"-"+data.data.bottom.name;
 
-                                        return ["{name| "+"10%   "+ data.data.bottom.name+"}{id| "+"\n"+"top:【"+data.data.top.id+"】"+"}{value| "+data.data.top.age+"}{id| "+";"+"bottom:【"+data.data.bottom.id+"】"+"}{value| "+data.data.bottom.age+"}"].join('');
+                                        return ["{name| "+mainStr+"}{id| "+"\n"+"top:【"+data.data.top.id+"】"+"}{value| "+data.data.top.age+"}{id| "+";"+"bottom:【"+data.data.bottom.id+"】"+"}{value| "+data.data.bottom.age+"}"].join('');
                                     },
                                     rich: { //给不同的数据应用不同的样式
                                         img:{
@@ -255,20 +277,20 @@
                                         },
                                         name: {
                                             color: '#000',
-                                            fontSize: 25,
+                                            fontSize: 20,
                                             lineHeight: 40,
                                             align: 'left',  // 设置左对齐
                                         },
                                         id: {
                                             color: '#000',
-                                            fontSize: 14,
+                                            fontSize: 10,
                                             lineHeight: 20,
                                             align: 'left',  // 设置左对齐
                                         },
                                         
                                         value: {
                                             color: '#000',
-                                            fontSize: 14,
+                                            fontSize: 10,
                                             lineHeight: 20,
                                             fontWeight: 'bold',
                                             align: 'left',  // 设置左对齐
