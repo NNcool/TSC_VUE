@@ -14,12 +14,12 @@
               </el-select>
             </el-col>
             <el-col :span="5">
-              <el-button type="primary" @click="changeMapImage">确定</el-button>
+              <el-button type="primary" @click="changeMapImage">Choose</el-button>
               <el-button type="primary" @click="resetImage">Reset</el-button>
             </el-col>
             <el-col :span="6">
               <div class="block">
-                <span class="demonstration">选择圆点大小</span>
+                <span class="demonstration">Dot Size</span>
                 <el-slider v-model="circleRadius" :step="10" :min="10" :max="80" show-stops @change="redrawMarkers">
                 </el-slider>
               </div>
@@ -32,9 +32,8 @@
             <el-col :span="6">
               <div class="block">
                 <span class="demonstration">Age Slider</span>
-                <el-slider v-model="AgeSlider" :max="300" show-input>
+                <el-slider v-model="AgeSlider" :max="600" show-input @change="handleAgeSliderChange">
                 </el-slider>
-
               </div>
             </el-col>
           </el-row>
@@ -42,21 +41,21 @@
             <el-col :span="12">
               <div class="img-container" @mousedown="startDrag" @mousemove="dragImage" @mouseup="endDrag"
                 @dragstart.prevent @wheel="handleMouseWheel">
-                <el-image class="img" :src="imageUrl" v-show="false"
-                  :style="{ transform: `scale(${zoom})`, top: `${top}px`, left: `${left}px` }"
-                  @load="onImageLoad"></el-image>
+                <el-image class="img" :src="imageUrl" @load="onImageLoad" v-show="false"
+                  :style="{ transform: `scale(${zoom})`, top: `${top}px`, left: `${left}px` }"></el-image>
                 <canvas id="mapCanvas" class="img" @mousedown="startDrag" @mousemove="dragImage" @mouseup="endDrag"
-                  @dragstart.prevent :style="{ transform: `scale(${zoom})`, top: `${top}px`, left: `${left}px` }">
+                  @wheel="handleMouseWheel" @dragstart.prevent
+                  :style="{ transform: `scale(${zoom})`, top: `${top}px`, left: `${left}px` }">
                 </canvas>
               </div>
             </el-col>
           </el-row>
-          <el-row>
+          <!-- <el-row>
             <el-col :span="12">
               <el-col v-for="(location, index) in locationList" :key="index" :span="12">
                 <el-popover placement="top-start" width="200" trigger="hover">
-                  <el-button slot="reference" :style="{ width: 'auto' }" class="infoButton">{{
-                    location.areaName }}</el-button>
+                  <el-button slot="reference" :style="{ width: 'auto' }" class="infoButton">
+                    {{ location.areaName }}</el-button>
                   <div>
                     name: {{ location.areaName }}
                     <br>
@@ -65,7 +64,7 @@
                 </el-popover>
               </el-col>
             </el-col>
-          </el-row>
+          </el-row> -->
         </el-card>
       </el-main>
     </el-container>
@@ -91,20 +90,18 @@ export default {
         value: 'Sabah Sarawak',
         label: 'Sabah Sarawak'
       }],
+      popoverVisible: false,
       canvas: null,
       value: '',
       imageUrl: require('@/assets/WorldMap.jpg'),
       zoom: 1,
       left: 0,
       top: 0,
-      isDragging: false,
       startX: 0,
       startY: 0,
       originalZoom: 1, // 记录初始的缩放比例
       originalLeft: 0, // 记录初始的左位移
       originalTop: 0,  // 记录初始的上位移
-      // containerWidth: 800, // 容器的宽度
-      // containerHeight: 800, // 容器的高度
       locationList: [],
       mapName: '',
       mapNameIndex: '',
@@ -137,7 +134,7 @@ export default {
   },
   async created() {
     await this.changeMapImage(); // 加载数据的方法
-    await this.drawMarkers(); // 确保在数据加载完成后调用 drawMarkers
+    await this.drawMarkers(); // 确保在数据加载完成后调用drawMarkers
     this.calculateCenterCoordinates();
   },
   methods: {
@@ -153,12 +150,11 @@ export default {
         const deltaY = event.clientY - this.startY;
         this.left += deltaX;
         this.top += deltaY;
+        const canvas = document.getElementById('mapCanvas');
+        canvas.width = canvas.width;
+        this.drawMarkers();
         this.startX = event.clientX;
         this.startY = event.clientY;
-        // 更新画布大小以匹配图片大小
-        // const canvas = document.getElementById('mapCanvas');
-        // canvas.width = canvas.width; // 这会清空画布
-        // this.drawMarkers(); // 重新绘制标记
         event.preventDefault(); // 阻止默认行为
       }
     },
@@ -188,10 +184,19 @@ export default {
       }
     },
 
-    resetImage() {
+    async resetImage() {
       this.zoom = this.originalZoom; // 恢复缩放比例
       this.left = this.originalLeft; // 恢复左位移
       this.top = this.originalTop;   // 恢复上位移
+      this.AgeSlider = 0;
+      this.circleRadius = 15;
+
+      // 清空每个标记点的图片路径
+      this.locationList.forEach(location => {
+        location.imagePath = null;
+      });
+      // 重新绘制标记点
+      this.drawMarkers();
     },
 
     changeMapImage() {
@@ -220,7 +225,13 @@ export default {
         this.mapNameIndex = 4;
 
       }
-      this.$axios.get(`/malaysiamap/map/${this.mapName}`).then(response => {
+      const params = {
+        mapName: this.mapName
+      }
+
+      // 构建请求路径
+      const requestPath = `/malaysiamap/map?${new URLSearchParams(params).toString()}`;
+      this.$axios.get(requestPath).then(response => {
         if (response.data.result) {
           console.log(response.data)
           this.locationList = response.data.result;
@@ -229,11 +240,13 @@ export default {
           // 重新绘制标记
           this.drawMarkers();
         } else {
-          this.$message.error("获取失败")
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          this.$message.error("地区获取失败")
+
         }
       })
         .catch(error => {
-          this.$message.error("请求失败")
+          this.$message.error("功能仍在开发")
         })
     },
     // 计算中心经纬度
@@ -293,11 +306,13 @@ export default {
       // 添加点击事件处理程序
       const clickHandler = (event) => {
         console.log('Click event triggered'); // 确保点击事件被触发
-        const clickX = event.clientX - canvas.getBoundingClientRect().left;
-        const clickY = event.clientY - canvas.getBoundingClientRect().top;
+        const { left, top, width, height } = canvas.getBoundingClientRect();
+        const clickX = event.clientX - left;
+        const clickY = event.clientY - top;
+        const { lonRange, latRange } = this.mapInfo[this.mapNameIndex];
 
         // 将点击坐标转换为地图坐标
-        const mapCoordinates = this.pixelToMapCoordinates(clickX, clickY, canvas);
+        const mapCoordinates = this.pixelToMapCoordinates(clickX, clickY, canvas, { height, width });
 
         // 遍历标记点，检查点击坐标是否在某个点的范围内
         for (const location of this.locationList) {
@@ -322,93 +337,61 @@ export default {
 
       // 绘制标记点
       this.locationList.forEach(location => {
-        const { lon, lat, areaName } = location;
+        const { lon, lat, areaName, age, imagePath } = location;
         const { lonRange, latRange } = this.mapInfo[this.mapNameIndex];
         const { x, y } = this.calculateMarkerPosition(lon, lat, lonRange, latRange, canvas);
 
         ctx.beginPath();
         ctx.arc(x, y, this.circleRadius, 0, 2 * Math.PI);
+        //填充颜色
         ctx.fillStyle = 'white';
+        //边框颜色
+        ctx.strokeStyle = 'black';
+        //填充路径
         ctx.fill();
+        //绘制边框
+        ctx.stroke();
+
         // 绘制标记点图片
-        const imagePath = require('@/assets/logo.png');
+        // const imagePath = require('@/assets/logo.png');
+
         if (imagePath) {
           const markerImage = new Image();
           markerImage.src = imagePath;
-
+          console.log(markerImage)
           markerImage.onload = () => {
             const { x, y } = this.calculateMarkerPosition(lon, lat, lonRange, latRange, canvas);
+            // 保存当前的绘图状态
+            ctx.save();
+
+            // 创建一个圆形的路径
+            ctx.beginPath();
+            ctx.arc(x, y, this.circleRadius, 0, 2 * Math.PI);
+
+            // 将图像限制在圆形路径内
+            ctx.clip();
+
+            // 在限制的区域内绘制图像
             ctx.drawImage(markerImage, x - this.circleRadius, y - this.circleRadius, this.circleRadius * 2, this.circleRadius * 2);
+
+            // 恢复绘图状态，以便不影响其他绘图操作
+            ctx.restore();
           };
 
           markerImage.onerror = (error) => {
             console.error(`Error loading image: ${imagePath}`, error);
           };
         }
-
-
-        ctx.font = '20px Arial';
-        ctx.fillStyle = 'white';
-        this.adjustTextPosition(this.locationList, ctx, canvas);
-        ctx.fillText(areaName, x - 40, y - 40);
-        ctx.fillText(lon, x, y + 20);
-        ctx.fillText(lat, x + 80, y + 20);
       });
     },
-    // 在绘制标记点文字之前调用此函数
-    adjustTextPosition(locationList, ctx, canvas) {
-      const padding = 20; // 调整文字位置的边距
-      for (let i = 0; i < locationList.length; i++) {
-        const currentLocation = locationList[i];
-        const { lon, lat, areaName } = currentLocation;
-        const { lonRange, latRange } = this.mapInfo[this.mapNameIndex];
-
-        const { x, y } = this.calculateMarkerPosition(lon, lat, lonRange, latRange, canvas);
-
-        // 检查当前标记点与之前标记点之间的距离
-        for (let j = 0; j < i; j++) {
-          const previousLocation = locationList[j];
-          const { prevX, prevY } = this.calculateMarkerPosition(
-            previousLocation.lon,
-            previousLocation.lat,
-            lonRange,
-            latRange,
-            canvas
-          );
-          // 如果文字之间的距离太近，调整当前文字的位置
-          if (Math.abs(x - prevX) < padding && Math.abs(y - prevY) < padding) {
-            // 调整当前标记点文字的位置
-            ctx.fillText(areaName, x - 40, y - 40 - padding);
-
-          }
-        }
-      }
-    },
     //点击坐标到地图坐标的转换
-    pixelToMapCoordinates(pixelX, pixelY, canvas) {
-      const mapX = (pixelX - this.left) / this.zoom + this.centerLon;
-      const mapY = (pixelY - this.top) / this.zoom + this.centerLat;
-      console.log('pixelX:', pixelX, 'pixelY:', pixelY, 'this.left:', this.left, 'this.top:', this.top, '地图坐标:', mapX, mapY);
+    pixelToMapCoordinates(pixelX, pixelY, canvas, realCanvas) {
+      const mapX = pixelX / realCanvas.width * canvas.width;
+      const mapY = pixelY / realCanvas.height * canvas.height;
+      // console.log('pixelX:', pixelX, 'pixelY:', pixelY, 'this.left:', this.left, 'this.top:', this.top, '地图坐标:', mapX, mapY);
       return { x: mapX, y: mapY };
     },
-    // pixelToMapCoordinates(pixelX, pixelY, canvas) {
-    //   const mapX = (pixelX - canvas.width / 2) / this.zoom + this.centerLon;
-    //   const mapY = (canvas.height / 2 - pixelY) / this.zoom + this.centerLat;
-    //   console.log('地图坐标:', mapX, mapY);
-    //   return { x: mapX, y: mapY };
-    // },
-    //     pixelToMapCoordinates(pixelX, pixelY, canvas) {
-    //   const mapX = pixelX / this.zoom + this.centerLon;
-    //   const mapY = pixelY / this.zoom + this.centerLat;
-    //   console.log('地图坐标:', mapX, mapY);
-    //   return { x: mapX, y: mapY };
-    // },
-    // pixelToMapCoordinates(pixelX, pixelY, canvas) {
-    //   const mapX = (pixelX - canvas.offsetWidth / 2) / this.zoom + this.centerLon;
-    //   const mapY = (canvas.offsetHeight / 2 - pixelY) / this.zoom + this.centerLat;
-    //   console.log('地图坐标:', mapX, mapY);
-    //   return { x: mapX, y: mapY };
-    // },
+
     // 添加一个计算位置的方法
     calculateMarkerPosition(lon, lat, lonRange, latRange, canvas) {
       const x = this.mapToPixelX(lon, canvas.width, lonRange.minLon, lonRange.maxLon);
@@ -416,9 +399,9 @@ export default {
       console.log('位置坐标：', x, y)
       return { x, y };
     },
+    //根据位置信息展示相应的信息
     showLocationInfo(location) {
-      // 根据位置信息展示相应的信息，例如弹窗、在界面上显示等
-      alert(`显示位置信息：${location.areaName}，经度：${location.lon}，纬度：${location.lat}`);
+      alert(`Name：${location.areaName} Lon：${location.lon},Lat:${location.lat}`);
     },
     isPointInCircle(px, py, cx, cy, radius) {
       // 允许一定范围的误差
@@ -435,19 +418,51 @@ export default {
       });
       this.clickHandlers = [];
     },
+    // 根据经度计算X像素坐标
     mapToPixelX(lon, mapWidth, minLon, maxLon) {
-      // 根据经度计算X像素坐标的逻辑
       const lonRange = maxLon - minLon;
       const lonPosition = (lon - minLon) / lonRange;
       const xPixel = lonPosition * mapWidth;
       return xPixel;
     },
+    // 根据纬度计算Y像素坐标
     mapToPixelY(lat, mapHeight, minLat, maxLat) {
-      // 根据纬度计算Y像素坐标的逻辑
       const latRange = maxLat - minLat;
       const latPosition = 1 - (lat - minLat) / latRange;
       const yPixel = latPosition * mapHeight;
       return yPixel;
+    },
+    // 处理 AgeSlider 值变化的方法
+    handleAgeSliderChange() {
+      this.getDataFromBackend(); // 获取后端数据
+    },
+    // 年龄连接获取后端数据的方法
+    async getDataFromBackend() {
+      // 构建请求参数
+      const params = {
+        mapName: this.mapName,
+        age: this.AgeSlider, // 使用 AgeSlider 的值作为年龄参数
+        // 其他可能需要的参数
+      };
+
+      // 构建请求路径
+      const requestPath = `/malaysiamap/map?${new URLSearchParams(params).toString()}`;
+
+      try {
+        const response = await this.$axios.get(requestPath);
+        if (response.data.result) {
+          this.locationList = response.data.result;
+
+          // 计算中心经纬度
+          this.calculateCenterCoordinates();
+          // 重新绘制标记
+          this.drawMarkers();
+        } else {
+          this.$message.error("获取失败");
+        }
+      } catch (error) {
+        this.$message.error("请求失败");
+      }
     },
   }
 }
@@ -459,6 +474,8 @@ export default {
 .card {
   width: 100%;
   height: 100%;
+  background-color: #f0f0f0;
+  border: 2px solid #000;
 }
 
 .img-container {
@@ -479,8 +496,4 @@ export default {
 .infoButton {
   margin: 10px;
 }
-
-/* .canvas {
-  position: absolute;
-} */
 </style>
