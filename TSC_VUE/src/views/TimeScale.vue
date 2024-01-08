@@ -371,7 +371,7 @@ export default {
         generateChart() {
             var echarts = require('echarts');
             if (this.$refs.tree) {
-                const fixedLabels = ['period', 'epoch', 'ageStage'];
+                const fixedLabels = ['Period', 'Epoch', 'Age/Stage'];
                 const checkedNodes = this.$refs.tree.getCheckedNodes();
                 const dynamicLabels = checkedNodes.map(node => node.areaName);
                 const labels = dynamicLabels.concat(dynamicLabels);
@@ -390,7 +390,7 @@ export default {
                             normal: {
                                 color: item.color,
                                 borderColor: 'black', // 边框颜色
-                                borderWidth: 2, // 边框宽度
+                                borderWidth: 0.1, // 边框宽度
                             },
 
                         },
@@ -434,8 +434,8 @@ export default {
                                     normal: {
                                         color: color,
                                         position: 'relative',
-                                        // borderColor: 'black', // 边框颜色
-                                        // borderWidth: 2, // 边框宽度
+                                        borderColor: 'black', // 边框颜色
+                                        borderWidth: 1, // 边框宽度
                                         backgroundSize: '10% 10%',
                                         symbolSize: [10, 10],
                                     },
@@ -472,7 +472,7 @@ export default {
                                     normal: {
                                         color: 'white', // 设置为透明，即不显示默认的柱状图背景颜色,
                                         borderColor: 'black', // 边框颜色
-                                        borderWidth: 2, // 边框宽度
+                                        borderWidth: 0.1, // 边框宽度
                                     },
                                 },
                                 label: {

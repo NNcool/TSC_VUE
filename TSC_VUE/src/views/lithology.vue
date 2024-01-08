@@ -32,7 +32,7 @@
             <el-col :span="6">
               <div class="block">
                 <span class="demonstration">Age Slider</span>
-                <el-slider v-model="AgeSlider" :max="600" show-input @change="handleAgeSliderChange">
+                <el-slider v-model="AgeSlider" :max="600" show-input @input="handleAgeSliderInput">
                 </el-slider>
               </div>
             </el-col>
@@ -237,16 +237,17 @@ export default {
           this.locationList = response.data.result;
           // 计算中心经纬度
           this.calculateCenterCoordinates();
+
           // 重新绘制标记
           this.drawMarkers();
         } else {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          this.$message.error("地区获取失败")
+          // this.$message.error("地区获取失败")
 
         }
       })
         .catch(error => {
-          this.$message.error("数据不存在")
+          // this.$message.error("数据不存在")
         })
     },
     // 计算中心经纬度
@@ -287,7 +288,7 @@ export default {
       this.clearClickHandlers();
 
       // 清空画布
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      //ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // 绘制地图图片
       const mapImage = new Image();
@@ -433,8 +434,9 @@ export default {
       return yPixel;
     },
     // 处理 AgeSlider 值变化的方法
-    handleAgeSliderChange() {
+    handleAgeSliderInput() {
       this.getDataFromBackend(); // 获取后端数据
+      // this.updateMarkers();
     },
     // 年龄连接获取后端数据的方法
     async getDataFromBackend() {
@@ -458,11 +460,23 @@ export default {
           // 重新绘制标记
           this.drawMarkers();
         } else {
-          this.$message.error("获取失败");
+          // this.$message.error("获取失败");
         }
       } catch (error) {
         this.$message.error("请求失败");
       }
+    },
+    updateMarkers() {
+      // 具体的更新标记的逻辑，可以根据你的需求进行修改
+      // 以下是示例代码，你需要根据实际情况修改
+      this.locationList.forEach(location => {
+        location.age = this.AgeSlider; // 假设 location 中有一个 age 属性，用于存储年龄
+      });
+
+      // 计算中心经纬度
+      this.calculateCenterCoordinates();
+      // 重新绘制标记
+      this.drawMarkers();
     },
   }
 }
